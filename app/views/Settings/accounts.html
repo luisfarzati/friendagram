@@ -1,0 +1,45 @@
+#{extends 'main.html' /}
+#{set title:'Configuration' /}
+
+#{if flash.contains("account")}
+<div class="alert alert-success">
+Successfully added account ${flash.get("account")}.
+</div>
+#{/if}
+
+#{if flash.error}
+<div class="alert alert-error">${flash.error}</div>
+#{/if}
+
+#{if flash.contains("delete")}
+<div class="alert alert-info">The account was deleted.</div>
+#{/if}
+
+<table class="table table-striped">
+<tr>
+	<th>User</th>
+	<th>Name</th>
+	<th></th>
+</tr>
+#{list accounts, as:'account'}
+<tr>
+	<td style="vertical-align:middle">
+		<img src="${account.photo}" style="width:30px;height:30px"> <span>${account.username}</span>
+	</td>
+	<td style="vertical-align:middle">${account.fullname}</td>
+	<td style="vertical-align:middle">
+		#{form @Settings.deleteAccount(account.id), method:'POST', style:'margin:0'}
+			<button class="btn btn-danger" type="submit">Delete</button>
+		#{/form}
+	</td>
+</tr>
+#{/list}
+#{else}
+<tr>
+	<td colspan="2">No accounts added yet!</td>
+</tr>
+#{/else}
+</table>
+
+<iframe id="logout" style="display:none"></iframe>
+<button class="btn btn-primary" onclick="document.getElementById('logout').onload=function(e) { document.location='@{Settings.oauth()}' };document.getElementById('logout').src='https://instagram.com/accounts/logout/?${System.currentTimeMillis()}'">Add account</button>

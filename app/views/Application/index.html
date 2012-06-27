@@ -1,0 +1,88 @@
+#{extends 'main.html' /}
+#{set title:'Autofollow' /}
+
+#{if id == null}
+#{/if}
+#{else}
+<div id="newJob" style="display:${job == null ? "block" : "none"}">
+	<div id="newJobInfo" class="alert alert-info" style="display:none"></div>	
+	<div style="font-size:30px">http://instagr.am/p/<input id="shortCode" type="text" style="margin-left:2px;margin-top:2px;padding:15px;font-size:30px"></div>
+	<button id="startJob" class="btn btn-primary btn-large">Start</button>
+</div>
+
+<script>
+	$('#shortCode').focus();
+
+	$('#shortCode').on('keyup', function(e) {
+		if(e.keyCode == '13') {
+			startJob();
+		}
+	});
+	
+	$('#startJob').click(function() {
+		startJob();
+	});
+	
+	function startJob() {
+		var shortCode = $('#shortCode').val().trim();
+		if(shortCode == '') {
+			$('#newJobInfo').text('Please insert a valid Instagram URL shortcode');
+			$('#newJobInfo').show();
+		}
+		else {
+			$.get('http://api.instagram.com/oembed?url=http://instagr.am/p/' + shortCode, null, function(data,status,xhr) {
+				$('#newJobInfo').hide();
+				$('#startJob').hide();
+				$.get('@{Application.runJob}?id=${id}&shortCode='+$('#shortCode').val().trim(), null, function(data,status,xhr) {
+					console.log(status + ': ' + data);
+					document.location = '@{Application.index(id)}';
+				});
+			}, 'jsonp');
+		}
+	}	
+</script>
+#{/else}
+
+#{if job != null}
+<div id="job" style="margin-bottom:10px;height:170px">
+	<div id="jobStatus" class="alert alert-${job.finished ? job.error == null ? "success" : "error" : "info"}">${job.status}</div>
+	<img src="http://instagr.am/p/${job.shortCode}/media?size=t" 
+		style="display:block;float:left;max-width:100px;max-height:100px;margin-right:10px">
+	<div style="clear:both;width:100px;text-align:center;font-size:0.8em;height:16px;">
+		<div id="jobProgress" style="width:${Math.round((job.processed/(job.likeCount == 0 ? 1 : job.likeCount))*100)}px;height:100%;white-space:nowrap;text-overflow:visible;background-color:#88ccff">${job.processed} of ${job.likeCount} (${job.followCount})</div>
+	</div>
+</div>
+
+<button id="finish" onclick="$('#job').hide();$('#finish').hide();$('#newJob').show();" style="clear:both;display:${job.finished ? "block" : "none"};" class="btn btn-primary btn-large">Finish</button>
+
+<script>
+	function refreshJob() {
+		$.get('@{Application.status(id)}', null, function(data,status,xhr) {
+			$('#jobStatus').text(data.status);
+			$('#jobStatus').removeClass('alert-info alert-success alert-error');
+			if(data.error) {
+				$('#jobStatus').addClass('alert-error');
+			}
+			else if(data.finished) {
+				$('#jobStatus').addClass('alert-success');
+			}
+			else {
+				$('#jobStatus').addClass('alert-info');
+			}
+			
+			$('#jobProgress').css('width', Math.round((data.processed/data.likeCount)*100) + 'px');
+			$('#jobProgress').text(data.processed + ' of ' + data.likeCount + ' (' + data.followCount + ')');
+			if(!data.finished) {
+				setTimeout(refreshJob, 1000);
+			}
+			else {
+				$('#finish').show();
+			}
+			console.log(data.status+'['+data.finished+'] ' + data.processed + ',' + data.likeCount + ' ('+Math.round((data.processed/data.likeCount)*300)+')');
+		});
+	}
+	#{if !job.finished}
+	setTimeout(refreshJob, 1000);
+	#{/if}
+</script>
+#{/if}
