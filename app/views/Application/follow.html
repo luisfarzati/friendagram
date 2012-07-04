@@ -1,0 +1,50 @@
+<!doctype html>
+<html ng-app="instagram-tool">
+<head>
+    <title>Accounts | Instagram Tool</title>
+    <meta charset="utf8">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="//current.bootstrapcdn.com/bootstrap-v204/css/bootstrap-combined.min.css">
+	<link rel="stylesheet" href="@{'/public/stylesheets/follow.css'}">
+    
+    <script>
+    	var ROUTES = {
+    		enqueue: #{jsAction @enqueue(':username', ':job', ':shortcode') /},
+    		tasks: #{jsAction @tasks(':username', ':job') /},
+    		accounts: function() { return '@{Settings.accounts()}.json'; },
+    		delete: #{jsAction @delete(':username', ':job', ':shortcode') /}
+    	};
+    </script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="//current.bootstrapcdn.com/bootstrap-v204/js/bootstrap.min.js"></script>
+	<script src="//code.angularjs.org/angular-1.0.1.min.js"></script>
+    <script src="@{'/public/javascripts/follow.js'}"></script>
+</head>
+<body>
+	#{menu /}
+	
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span2" ng-controller="AccountsController">
+				<div class="well sidebar-nav">
+					<ul class="nav nav-list">
+						<li class="nav-header"><a href="#/home">Home</a></li>
+						#{accounts-list /}
+			        </ul>
+				</div>
+			</div>
+	
+			<div id="FollowTasks" class="span9">
+				<div class="hero-unit">
+			    	<div ng-view></div>
+			    </div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

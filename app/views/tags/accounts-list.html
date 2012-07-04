@@ -1,0 +1,6 @@
+<li class="nav-header">Accounts</li>
+<li class="account" ng-repeat="account in accounts | orderBy:username">
+	<a href="#/{{account.username}}/jobs/follow/tasks">
+		<img class="profile-picture" ng-src="{{account.photo}}"> <span ng-bind-template="{{account.username}}"></span>
+	</a>
+</li>

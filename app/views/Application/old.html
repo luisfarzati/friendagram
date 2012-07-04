@@ -1,0 +1,51 @@
+#{extends 'main.html' /}
+#{set title:'Autofollow' /}
+
+#{if id == null}
+#{/if}
+#{else}
+	#{jobinput /}
+#{/else}
+
+#{list job.keySet(), as:'code'}
+<div id="job${code}" style="margin-bottom:10px;height:170px">
+	<div id="jobMessage${code}" class="alert alert-${job.get(code).finished ? job.get(code).error == null ? "success" : "error" : "info"}">${job.get(code).status}</div>
+	<img src="http://instagr.am/p/${code}/media?size=t" 
+		style="display:block;float:left;max-width:100px;max-height:100px;margin-right:10px">
+	<div style="clear:both;width:100px;text-align:center;font-size:0.8em;height:16px;">
+		<div id="jobProgress" style="width:${Math.round((job.get(code).processed/(job.get(code).likeCount == 0 ? 1 : job.get(code).likeCount))*100)}px;height:100%;white-space:nowrap;text-overflow:visible;background-color:#88ccff">${job.get(code).processed} of ${job.get(code).likeCount} (${job.get(code).followCount})</div>
+	</div>
+</div>
+<button id="finish" onclick="$('#job').hide();$('#finish').hide();$('#newJob').show();" style="clear:both;display:${job.get(code).finished ? "block" : "none"};" class="btn btn-primary btn-large">Finish</button>
+#{/list}
+
+<script>
+	function refreshJob() {
+		$.get('@{Job.status(id)}', null, function(data,status,xhr) {
+			$('#jobStatus').text(data.status);
+			$('#jobStatus').removeClass('alert-info alert-success alert-error');
+			if(data.error) {
+				$('#jobStatus').addClass('alert-error');
+			}
+			else if(data.finished) {
+				$('#jobStatus').addClass('alert-success');
+			}
+			else {
+				$('#jobStatus').addClass('alert-info');
+			}
+			
+			$('#jobProgress').css('width', Math.round((data.processed/data.likeCount)*100) + 'px');
+			$('#jobProgress').text(data.processed + ' of ' + data.likeCount + ' (' + data.followCount + ')');
+			if(!data.finished) {
+				setTimeout(refreshJob, 1000);
+			}
+			else {
+				$('#finish').show();
+			}
+			console.log(data.status+'['+data.finished+'] ' + data.processed + ',' + data.likeCount + ' ('+Math.round((data.processed/data.likeCount)*300)+')');
+		});
+	}
+	#{if !job.finished}
+	setTimeout(refreshJob, 1000);
+	#{/if}
+</script>

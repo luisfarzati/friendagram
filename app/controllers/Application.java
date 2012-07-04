@@ -1,77 +1,86 @@
 package controllers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import jobs.FollowJob;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang.StringUtils;
+
 import models.Account;
+import models.JobManager;
 import play.Logger;
-import play.Play;
-import play.libs.F.Promise;
-import play.libs.WS;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.With;
+import redis.clients.jedis.Jedis;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-@With(InstagramApi.class)
+@With(Instagram.class)
 public class Application extends Controller {
-	static class JobManager {
-		private Map<Long,FollowJob> jobs = new HashMap<Long,FollowJob>();
-		private Map<FollowJob,Promise> tasks = new HashMap<FollowJob,Promise>();
-		
-		public FollowJob get(long id) {
-			return jobs.get(id);
-		}
-		
-		public void start(long id, String shortCode) {
-			FollowJob job = jobs.get(id);
-			if(job != null) {
-				if(tasks.get(job).isDone()) {
-					tasks.remove(job);
-					jobs.remove(id);
-				}
-				else {
-					throw new RuntimeException("A job for this account is still running");
-				}
-			}
-			
-			String token = ((Account)Account.findById(id)).token;
-			job = new FollowJob(token, shortCode);
-			jobs.put(id, job);
-			tasks.put(job, job.now());
-		}
-	}
-	
-	private static final JobManager JOBS = new JobManager();
 	
 	@SuppressWarnings("unused")
 	@Before
 	private static void before() {
-		renderArgs.put("clientId", Play.configuration.getProperty("instagram.clientId"));
-		renderArgs.put("redirectUri", Play.configuration.getProperty("instagram.redirectUri"));
-		
 		List<Account> accounts = Account.findAll();
 		renderArgs.put("accounts", accounts);
 	}
 	
-	
-	public static void index(Long id) {
-		if(id != null) {
-			renderArgs.put("job", JOBS.get(id));
-			renderArgs.put("id", id);
-		}
+	public static void follow() {
 		render();
 	}
-	
-	public static void status(long id) {
-		renderJSON(JOBS.get(id));
+
+	public static void tasks(String username, String job) {
+    	final Jedis jedis = new Jedis("localhost");
+    	final List<String> tasksSerialized;
+    	try {
+    		tasksSerialized = jedis.lrange(username + ":" + job + ":tasks", 0, -1);
+    		Logger.debug(username + ":" + job + ":tasks = %d", tasksSerialized.size());
+    	}
+    	finally {
+    		if(jedis.isConnected()) jedis.disconnect();
+    	}
+    	
+    	renderJSON("[" + StringUtils.join(tasksSerialized, ",") + "]");
+	}
+
+	public static void enqueue(String username, String job, String shortcode) {
+    	final Jedis jedis = new Jedis("localhost");
+    	try {
+    		jedis.rpush(username + ":" + job + ":tasks", "{ \"shortCode\": \"" + shortcode + "\" }");
+    	}
+    	finally {
+    		if(jedis.isConnected()) jedis.disconnect();
+    	}
 	}
 	
-    public static void runJob(final long id, final String shortCode) throws InterruptedException {
-    	JOBS.start(id, shortCode.replace("/", ""));
-//        render(url, users, error, followCount);
-    }
+	public static void delete(String username, String job, String shortcode) {
+    	final Jedis jedis = new Jedis("localhost");
+    	try {
+    		jedis.lrem(username + ":" + job + ":tasks", 1, "{ \"shortCode\": \"" + shortcode + "\" }");
+    	}
+    	finally {
+    		if(jedis.isConnected()) jedis.disconnect();
+    	}
+	}
+
+	public static void history() {
+    	final Jedis jedis = new Jedis("localhost");
+    	final List<String> activities;
+    	try {
+    		activities = jedis.lrange("history", 0, -1);
+    	}
+    	finally {
+    		if(jedis.isConnected()) jedis.disconnect();
+    	}
+    	
+    	JsonArray history = new JsonArray();
+    	Gson gson = new Gson();
+    	for(String activity : activities) {
+    		history.add(gson.fromJson(activity, JsonObject.class));
+    	}
+    	
+    	renderJSON(history);
+	}
 }

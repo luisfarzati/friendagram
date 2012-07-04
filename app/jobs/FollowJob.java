@@ -54,8 +54,8 @@ public class FollowJob extends Job {
 		final URL url = new URL(String.format(BASE_URL, shortCode));
 
 		timestamp = System.currentTimeMillis();
-    	
-		this.status = "Fetching picture information";
+		status = "Fetching picture information";
+		
 		Logger.info("%s %s starting follow job", token, shortCode);
     	final JsonElement oembedInfo = WS.url(ombedize(url)).get().getJson();
     	Logger.trace(oembedInfo.toString());
@@ -63,7 +63,7 @@ public class FollowJob extends Job {
     	final String mediaId = oembedInfo.getAsJsonObject().get("media_id").getAsString();
     	Logger.debug("%s %s media id is %s", token, shortCode, mediaId);
 
-		this.status = "Getting users who liked";
+		status = "Getting users who liked";
     	final JsonElement likesInfo = WS.url(likes(mediaId)).get().getJson();
     	Logger.trace(likesInfo.toString());
     	String error = checkForErrors(likesInfo);
@@ -75,7 +75,7 @@ public class FollowJob extends Job {
     	
     	final List<User> users = new ArrayList<User>();
     	
-    	this.status = "Following users";
+    	status = "Following users";
     	final Jedis jedis = new Jedis("localhost");
     	try {
 	    	for(JsonElement like : likes) {

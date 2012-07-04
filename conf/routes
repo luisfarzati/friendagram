@@ -2,8 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET     /                                       Application.index
+GET     /                                       Application.follow
+
+
+GET		/jobs/{id}/{code}/status				Job.status({id},{code})
+PUT		/jobs/{id}/{code}						Job.enqueue({id}, {code})
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
@@ -12,4 +15,5 @@ GET     /favicon.ico                            404
 GET     /public/                                staticDir:public
 
 # Catch all
+*       /{controller}/{action}.json             {controller}.{action}(format:'json')
 *       /{controller}/{action}                  {controller}.{action}

@@ -1,45 +1,171 @@
-#{extends 'main.html' /}
-#{set title:'Configuration' /}
+<!doctype html>
+<html ng-app>
+<head>
+    <title>Accounts | Instagram Tool</title>
+    <meta charset="utf8">
 
-#{if flash.contains("account")}
-<div class="alert alert-success">
-Successfully added account ${flash.get("account")}.
-</div>
-#{/if}
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-#{if flash.error}
-<div class="alert alert-error">${flash.error}</div>
-#{/if}
+    <link rel="stylesheet" media="screen" href="@{'/public/bootstrap/css/bootstrap.min.css'}">
 
-#{if flash.contains("delete")}
-<div class="alert alert-info">The account was deleted.</div>
-#{/if}
+    <style>
+		body {
+		  padding-top: 60px;
+		  padding-bottom: 40px;
+		}
+		.sidebar-nav {
+		  padding: 9px 0;
+		}
+		.hero-unit {
+			padding: 20px;
+		}
+		.accounts {
+			margin: 8px 0;
+		}
+		
+		.accounts li {
+			list-style-type: none;
+			width: 100px;
+			height: 100px;
+			float: left;
+			margin: 4px;
+		}
+		
+		.accounts li.add {
+			border: 1px dotted darkgrey;
+		}
+		
+		.accounts li.add:hover {
+			cursor: pointer;
+			border: 1px dotted black;
+		}
+		
+		.accounts li.add button {
+			display: block;
+			width: 100%;
+			height: 100%;
+			border: none;
+			background: none;
+		}
+		
+		.accounts li img {
+			display: block;
+			position: absolute;
+			width: 100px;
+			height: 100px;
+		}
+		
+		.accounts li.add img {
+			width: 60px;
+			height: 60px;
+			margin: 20px;
+			-webkit-filter: opacity(30%) grayscale();
+		}
+		
+		.accounts li.add:hover img {
+			-webkit-filter: opacity(100%);
+		}
+		
+		.accounts li span, .accounts li i {
+			display: none;
+		}
+		
+		.accounts li:hover {
+			cursor: default;
+		}
+		
+		.accounts li:hover span {
+			display: block;
+			position: absolute;
+			padding: 35px 10px 0 10px;
+			width: 80px;
+			height: 65px;
+			word-wrap: break-word;
+			background-color: white;
+			opacity: .9;
+			font-weight: bold;
+			font-size: 2em;
+		}
+		
+		
+		.remove {
+			display: block;
+			position: relative;
+			top: 5px;
+			left: 80px;
+			border: none;
+			background: none;
+		}
+		
+		.remove i {
+			-webkit-border-radius: 20px;
+			-moz-border-radius: 20px;
+			border-radius: 20px;
+		}
+		
+		.accounts li:hover i:hover {
+			cursor: pointer;
+			-webkit-box-shadow: 0 0 20px rgba(255,0,0,.6), inset 0 0 20px rgba(255,0,0,1);
+			-moz-box-shadow: 0 0 20px rgba(255,0,0,.6), inset 0 0 20px rgba(255,0,0,1);
+			box-shadow: 0 0 20px rgba(255,0,0,.6), inset 0 0 20px rgba(255,0,0,1);
+		
+			-webkit-border-radius: 60em;
+			-moz-border-radius: 60em;
+			border-radius: 60em;
+		}
+    </style>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script src="http://code.angularjs.org/angular-1.0.1.min.js"></script>
+    <script>
+	    function AccountsController($scope, $http) {
+	    	$http.get('@{Settings.accounts()}.json').success(function(accounts) {
+	    		$scope.accounts = accounts;
+	    	});
+	    }
+    </script>
+</head>
+<body>
+	#{menu /}
+	
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span2">
+				<div class="well sidebar-nav">
+					<ul class="nav nav-list">
+						<li class="nav-header">Settings</li>
+						<li><a href="@{Settings.accounts()}">Accounts</a></li>
+			        </ul>
+				</div>
+			</div>
+	
+			<div class="span9">
+				<div class="hero-unit" ng-controller="AccountsController">
+					<h2 ng-bind-template="Configured accounts ({{accounts.length}})">Configured accounts</h2>
+					<ul class="accounts">
+			    		<li ng-repeat="account in accounts | orderBy:username">
+			    			<img ng-src="{{account.photo}}">
+			    			<span ng-bind-template="{{account.username}}">loading</span>
+			    			<button class="remove" type="submit"><i class="icon-remove-sign"></i></button>
+			    		</li>
+			    		<li class="add">
+			    			<a href="https://instagram.com/accounts/logout/?${System.currentTimeMillis()}" target="logout"><img src="http://www.tugrancanaria.com/images/large_add.png?1311068478"></a>
+			    		</li>
+			    	</ul>
+			    	<div style="clear:both"></div>
+			    </div>
+			</div>
+		</div>
+	</div>
+	
+	<footer style="padding:0 20px">
+		<hr>
+		<a href="http://twitter.com/luisfarzati">@luisfarzati</a>
+	</footer>
 
-<table class="table table-striped">
-<tr>
-	<th>User</th>
-	<th>Name</th>
-	<th></th>
-</tr>
-#{list accounts, as:'account'}
-<tr>
-	<td style="vertical-align:middle">
-		<img src="${account.photo}" style="width:30px;height:30px"> <span>${account.username}</span>
-	</td>
-	<td style="vertical-align:middle">${account.fullname}</td>
-	<td style="vertical-align:middle">
-		#{form @Settings.deleteAccount(account.id), method:'POST', style:'margin:0'}
-			<button class="btn btn-danger" type="submit">Delete</button>
-		#{/form}
-	</td>
-</tr>
-#{/list}
-#{else}
-<tr>
-	<td colspan="2">No accounts added yet!</td>
-</tr>
-#{/else}
-</table>
-
-<iframe id="logout" style="display:none"></iframe>
-<button class="btn btn-primary" onclick="document.getElementById('logout').onload=function(e) { document.location='@{Settings.oauth()}' };document.getElementById('logout').src='https://instagram.com/accounts/logout/?${System.currentTimeMillis()}'">Add account</button>
+	<iframe id="logout" style="display:none" onload="if(typeof loaded != 'undefined') parent.location='@{Instagram.oauth()}'; else loaded = true;"></iframe>
+</body>
+</html>

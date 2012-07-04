@@ -1,0 +1,108 @@
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+.sidebar-nav {
+  padding: 9px 0;
+}
+.hero-unit {
+	padding: 20px;
+}
+
+.account img.profile-picture {
+	width: 30px;
+	height: 30px;
+}
+
+.tasks {
+	margin: 8px 0;
+}
+
+.tasks li {
+	list-style-type: none;
+	width: 100px;
+	height: 100px;
+	float: left;
+	margin: 4px;
+}
+
+.tasks li.add {
+	border: 1px dotted darkgrey;
+}
+
+.tasks li.add:hover {
+	cursor: pointer;
+	border: 1px dotted black;
+}
+
+.tasks li.add a {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: none;
+	background: none;
+}
+
+.tasks li img {
+	display: block;
+	position: absolute;
+	width: 100px;
+	height: 100px;
+}
+
+.tasks li img.deleted {
+	-webkit-filter: opacity(20%) grayscale();
+}
+
+.tasks li.add img {
+	width: 60px;
+	height: 60px;
+	margin: 20px;
+	-webkit-filter: opacity(30%) grayscale();
+}
+
+.tasks li.add:hover img {
+	-webkit-filter: opacity(100%);
+}
+
+.tasks li span, .accounts li i {
+	display: none;
+}
+
+.tasks li:hover {
+	cursor: default;
+}
+
+.tasks li:hover span {
+	display: block;
+	position: absolute;
+	padding: 35px 10px 0 10px;
+	width: 80px;
+	height: 65px;
+	word-wrap: break-word;
+	background-color: white;
+	opacity: .7;
+	font-weight: bold;
+	font-size: 2em;
+}
+
+.remove {
+	display: block;
+	position: relative;
+	top: 5px;
+	left: 74px;
+	border: none;
+	background: none;
+}
+
+.tasks li i {
+	visibility: hidden;
+}
+
+.tasks li:hover i {
+	visibility: visible;
+}
+
+.tasks li:hover i:hover {
+	cursor: pointer;
+}
