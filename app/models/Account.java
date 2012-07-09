@@ -1,5 +1,7 @@
 package models;
 
+import java.net.URL;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -12,15 +14,15 @@ public class Account extends GenericModel {
 	@Id
 	public long id;
 	public String username;
-	public String fullname;
-	public String photo;
+	public URL photo;
 
 	@Expose(serialize=false)
 	public String token;
 
-	public Account(long id, String username, String token) {
+	public Account(long id, String username, URL photo, String token) {
 		this.id = id;
 		this.username = username;
+		this.photo = photo;
 		this.token = token;
 	}
 }

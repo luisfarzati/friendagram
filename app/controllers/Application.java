@@ -31,7 +31,7 @@ public class Application extends Controller {
 		render();
 	}
 
-	public static void tasks(String username, String job) {
+	public static void tasks(final String username, final String job) {
     	final Jedis jedis = new Jedis("localhost");
     	final List<String> tasksSerialized;
     	try {
@@ -45,7 +45,7 @@ public class Application extends Controller {
     	renderJSON("[" + StringUtils.join(tasksSerialized, ",") + "]");
 	}
 
-	public static void enqueue(String username, String job, String shortcode) {
+	public static void enqueue(final String username, final String job, final String shortcode) {
     	final Jedis jedis = new Jedis("localhost");
     	try {
     		jedis.rpush(username + ":" + job + ":tasks", "{ \"shortCode\": \"" + shortcode + "\" }");
@@ -55,7 +55,7 @@ public class Application extends Controller {
     	}
 	}
 	
-	public static void delete(String username, String job, String shortcode) {
+	public static void delete(final String username, final String job, final String shortcode) {
     	final Jedis jedis = new Jedis("localhost");
     	try {
     		jedis.lrem(username + ":" + job + ":tasks", 1, "{ \"shortCode\": \"" + shortcode + "\" }");

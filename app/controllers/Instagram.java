@@ -2,11 +2,12 @@ package controllers;
 
 import static play.Play.configuration;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import models.Account;
 
 import org.apache.commons.lang.StringUtils;
-
-import com.google.gson.JsonObject;
 
 import play.Logger;
 import play.libs.OAuth2;
@@ -14,6 +15,8 @@ import play.libs.WS;
 import play.mvc.Before;
 import play.mvc.Controller;
 import play.mvc.Router;
+
+import com.google.gson.JsonObject;
 
 public class Instagram extends Controller {
 	static class Properties {
@@ -87,14 +90,16 @@ public class Instagram extends Controller {
 		final JsonObject userInfo = tokenInfo.get("user").getAsJsonObject(); 
 		final long id = userInfo.get("id").getAsLong();
 		final String username = userInfo.get("username").getAsString();
-		final String fullname = userInfo.get("full_name").getAsString();
-		final String photo = userInfo.get("profile_picture").getAsString();
+		URL photo;
+		try {
+			photo = new URL(userInfo.get("profile_picture").getAsString());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			photo = null;
+		}
 
 		if(Account.findById(id) == null) {
-			final Account account = new Account(id, username, token);
-			account.fullname = fullname;
-			account.photo = photo;
-			account.save();
+			new Account(id, username, photo, token).save();
 			flash("account", username);
 		}
 	}
