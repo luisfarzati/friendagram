@@ -12,3 +12,4 @@ modules/
 .settings
 eclipse/
 precompiled/
+server.pid
